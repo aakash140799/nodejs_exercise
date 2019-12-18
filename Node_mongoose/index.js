@@ -8,19 +8,29 @@ const connect = mongoose.connect(url);
 connect.then((db) => {
     console.log('connected');
 
-    const dish = new Dishes({
+    Dishes.create({
         name: 'Uthappizza',
-        description: 'test'
-    });
-
-    dish.save()
-    .then((result) => {
-        console.log(result);
-
-        return Dishes.find({});
+        description: 'test',
     })
-    .then((result) => {
-        console.log(result);
+    .then((dish) => {
+        console.log(dish);
+
+        return Dishes.findByIdAndUpdate(dish._id,{$set: {
+            description: 'updated'
+        }}, {new : true}).exec();
+    })
+    .then((dish) => {
+        console.log(dish);
+
+        dish.comments.push({
+            rating: 5,
+            comment: "I\'m feeling sinking!",
+            author: "Leonardo di Carpicco"
+        });
+        return  dish.save();
+    })
+    .then((dish) => {
+        console.log(dish);
 
         return Dishes.remove({});
     })
