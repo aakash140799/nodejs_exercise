@@ -1,47 +1,80 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const Dishes = require('../models/dishes');
+
 
 var dishRouter = express.Router();
 dishRouter.use(bodyParser.json());
 
 dishRouter.route('/')
-.all((req, res, next) => {
-    res.setHeader('Content-Type', 'text/plain');
-    res.statusCode = 200;
-    next();
-})
 .get((req, res, next) => {
-    res.end("sending all dishes");
+    Dishes.find({})
+    .then((dishes) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type','application/json');
+        res.json(dishes);
+    }, (err) => next(err))
+    .catch((err) => next(err));
 })
 .post((req, res, next) => {
-    res.end("creating new dish "+req.body.name+","+req.body.description);
+    Dishes.create(req.body)
+    .then((dishes) => {
+        console.log('dishes created', dishes);
+        res.statusCode = 200;
+        res.setHeader('Content-Type','application/json');
+        res.json(dishes);
+    }, (err) => next(err))
+    .catch((err) => next(err));
 })
 .put((req, res, next) => {
     res.statusMessage = 403;
     res.end("operation is not supported");
 })
 .delete((req, res, next) => {
-    res.end("deleting all dishes");
+    Dishes.remove({})
+    .then((dishes) => {
+        console.log('deleting dishes', dishes);
+        res.statusCode = 200;
+        res.setHeader('Content-Type','application/json');
+        res.json(dishes);
+    }, (err) => next(err))
+    .catch((err) => next(err));
 });
 
 dishRouter.route('/:dishid')
-.all((req, res, next) => {
-    res.setHeader('Content-Type', 'text/plain');
-    res.statusCode = 200;
-    next();
-})
 .get((req, res, next) => {
-    res.end("sending  dish: "+req.params.dishid);
+    Dishes.find({_id:req.params.dishid})
+    .then((dish) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type','application/json');
+        res.json(dish);
+    }, (err) => next(err))
+    .catch((err) => next(err));
 })
 .post((req, res, next) => {
-    res.end("creating new dish "+req.body.name+","+req.body.description+","+req.params.dishid);
+    res.statusCode = 403;
+    res.end("Post operation not supported");
 })
 .put((req, res, next) => {
-    res.statusMessage = 403;
-    res.end("operation is not supported");
+    Dishes.findByIdAndUpdate({_id: req.params.dishid}, {
+        $set: req.body
+    }, {new: true})
+    .then((dish) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type','application/json');
+        res.json(dish);
+    }, (err) => next(err))
+    .catch((err) => next(err));
 })
 .delete((req, res, next) => {
-    res.end("deleting dish "+req.params.dishid);
+    Dishes.findByIdAndRemove({_id: req.params.dishid})
+    .then((dish) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type','application/json');
+        res.json(dish);
+    }, (err) => next(err))
+    .catch((err) => next(err));
 });
 module.exports = dishRouter;
