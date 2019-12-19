@@ -33,7 +33,7 @@ leaderRouter.route('/')
     res.end('Put operation not supported on /leaders');
 })
 .delete((req, res, next) => {
-    Leaders.find({}).remove()
+    Leaders.remove({})
     .then((resp) => {
         res.statusCode = 200;
         res.setHeader('Content-Type','application/json');

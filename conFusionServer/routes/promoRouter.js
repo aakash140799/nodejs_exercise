@@ -34,7 +34,7 @@ promoRouter.route('/')
     res.end('Put operation not supported on /promotions');
 })
 .delete((req, res, next) => {
-    Promotions.find({}).remove()
+    Promotions.remove({})
     .then((resp) => {
         res.statusCode = 200;
         res.setHeader('Content-Type','application/json');
