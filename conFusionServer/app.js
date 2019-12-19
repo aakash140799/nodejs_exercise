@@ -22,14 +22,15 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var dishRouter = require('./routes/dishRouter');
 var promoRouter = require('./routes/promoRouter');
-var leadRouter = require('./routes/leadRouter');
+var leaderRouter = require('./routes/leaderRouter');
 
 
 
 
 // import all models
 const Dishes = require('./models/dishes');
-
+const Promotions = require('./models/promotions');
+const Leaders = require('./models/leaders');
 
 
 var app = express();
@@ -48,7 +49,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/dishes', dishRouter);
 app.use('/promotions', promoRouter);
-app.use('/leader', leadRouter);
+app.use('/leaders', leaderRouter);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
