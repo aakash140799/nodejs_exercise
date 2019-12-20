@@ -3,6 +3,8 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var session = require('express-session');
+var FileStore = require('session-file-store')(session);
 
 
 // connect to mongo server
@@ -42,40 +44,41 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
+//app.use(cookieParser('secret'));
+app.use(session({
+  name: 'session_id',
+  secret: 'secret',
+  saveUninitialized: false,
+  resave: false,
+  store: new FileStore()
+}));
 
 // add authentication
 function auth(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if(!authHeader) {
-    const err = new Error('You are not authenticated');
-    err.status = 401;
-    res.setHeader('WWW-Authenticate','Basic');
 
+  console.log(req.session);
+  if(!req.session.user){
+    const err = new Error('You are not authenticated');
+    err.status = 403;
     next(err);
   }
   else {
-    var auth = new Buffer(authHeader.split(' ')[1], 'base64').toString().split(':');
-    const username = auth[0];
-    const password = auth[1];
-
-    if(username === 'Admin' && password === 'password'){
+    if(req.session.user === 'Authenticated'){
       next();
     }
     else {
       const err = new Error('incorrect authentication');
-      err.status = 401;
-      res.setHeader('WWW-Authenticate','Basic');
-
+      err.status = 403;
       next(err);
     }
   }
 }
-app.use(auth);
+
 
 // attach all routers
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use(auth);
 app.use('/dishes', dishRouter);
 app.use('/promotions', promoRouter);
 app.use('/leaders', leaderRouter);
