@@ -44,12 +44,42 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+// add authentication
+function auth(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if(!authHeader) {
+    const err = new Error('You are not authenticated');
+    err.status = 401;
+    res.setHeader('WWW-Authenticate','Basic');
+
+    next(err);
+  }
+  else {
+    var auth = new Buffer(authHeader.split(' ')[1], 'base64').toString().split(':');
+    const username = auth[0];
+    const password = auth[1];
+
+    if(username === 'Admin' && password === 'password'){
+      next();
+    }
+    else {
+      const err = new Error('incorrect authentication');
+      err.status = 401;
+      res.setHeader('WWW-Authenticate','Basic');
+
+      next(err);
+    }
+  }
+}
+app.use(auth);
+
 // attach all routers
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/dishes', dishRouter);
 app.use('/promotions', promoRouter);
 app.use('/leaders', leaderRouter);
+
 
 app.use(express.static(path.join(__dirname, 'public')));
 
