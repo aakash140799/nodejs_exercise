@@ -5,6 +5,9 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session');
 var FileStore = require('session-file-store')(session);
+var passport = require('passport');
+var authenticate = require('./authenticate');
+
 
 
 // connect to mongo server
@@ -53,27 +56,23 @@ app.use(session({
   store: new FileStore()
 }));
 
+
+
 // add authentication
 function auth(req, res, next) {
-
-  console.log(req.session);
-  if(!req.session.user){
-    const err = new Error('You are not authenticated');
-    err.status = 403;
-    next(err);
+  console.log(req.user);
+  if(req.user){
+    next();
   }
   else {
-    if(req.session.user === 'Authenticated'){
-      next();
-    }
-    else {
-      const err = new Error('incorrect authentication');
-      err.status = 403;
-      next(err);
-    }
+    const err = new Error('You are not Authenticated');
+    err.status = 401;
+    next(err);
   }
 }
 
+app.use(passport.initialize());
+app.use(passport.session());
 
 // attach all routers
 app.use('/', indexRouter);
@@ -82,8 +81,6 @@ app.use(auth);
 app.use('/dishes', dishRouter);
 app.use('/promotions', promoRouter);
 app.use('/leaders', leaderRouter);
-
-
 app.use(express.static(path.join(__dirname, 'public')));
 
 
