@@ -1,24 +1,21 @@
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
-var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var session = require('express-session');
-var FileStore = require('session-file-store')(session);
 var passport = require('passport');
 var authenticate = require('./authenticate');
+var config = require('./config');
 
 
 
 // connect to mongo server
 const mongoose = require('mongoose');
-
-const url = 'mongodb://localhost:27017/conFusion';
+const url = config.mongoUrl;
 const connect = mongoose.connect(url);
-
 connect.then((db) => {
   console.log('connected to mongo server');
 }, (err) => console.log(err));
+
 
 
 
@@ -31,11 +28,12 @@ var leaderRouter = require('./routes/leaderRouter');
 
 
 
-
 // import all models
 const Dishes = require('./models/dishes');
 const Promotions = require('./models/promotions');
 const Leaders = require('./models/leaders');
+
+
 
 
 var app = express();
@@ -44,40 +42,17 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-//app.use(cookieParser('secret'));
-app.use(session({
-  name: 'session_id',
-  secret: 'secret',
-  saveUninitialized: false,
-  resave: false,
-  store: new FileStore()
-}));
 
 
-
-// add authentication
-function auth(req, res, next) {
-  console.log(req.user);
-  if(req.user){
-    next();
-  }
-  else {
-    const err = new Error('You are not Authenticated');
-    err.status = 401;
-    next(err);
-  }
-}
 
 app.use(passport.initialize());
-app.use(passport.session());
-
 // attach all routers
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use(auth);
 app.use('/dishes', dishRouter);
 app.use('/promotions', promoRouter);
 app.use('/leaders', leaderRouter);

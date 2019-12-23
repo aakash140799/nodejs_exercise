@@ -2,6 +2,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var Users = require('../models/users');
 var passport = require('passport');
+var authenticate = require('../authenticate');
 
 
 var router = express.Router();
@@ -11,6 +12,7 @@ router.use(bodyParser.json());
 router.get('/', function(req, res, next) {
   res.send('respond with a resource');
 });
+
 
 router.post('/signup', function(req, res, next) {
   Users.register(new Users({username: req.body.username}), req.body.password, (err, user) => {
@@ -30,11 +32,14 @@ router.post('/signup', function(req, res, next) {
 });
 
 
+
 router.post('/login', passport.authenticate('local'), (req, res) => {
+  var token = authenticate.getToken({_id:req.user._id});
   res.statusCode = 200;
   res.setHeader('Content-Type','application/json');
-  res.json({success:'true', 'status':'Login successful'});
+  res.json({success:'true', token:token, 'status':'Login successful'});
 });
+
 
 
 router.get('/logout', function(req, res, next) {
@@ -43,13 +48,11 @@ router.get('/logout', function(req, res, next) {
     err.status = 403;
     next(err);
   }
-  else{
-    req.session.destroy();
-    res.clearCookie('session_id');
+  else{/*
     res.statusCode = 200;
     res.setHeader('Content-Type','text/plain');
     res.end('You are logged out successfully');
-    res.redirect('/');
+    res.redirect('/');*/
   }
 });
 
