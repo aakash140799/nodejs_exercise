@@ -40,3 +40,16 @@ module.exports.getToken = function(user) {
 }
 
 module.exports.verifyUser = passport.authenticate('jwt', {session: false});
+module.exports.verifyAdmin = function(req, res, next) {
+    passport.authenticate('jwt',{session: false}, (err, user) => {
+        if(err){next(err);}
+        else if(!user){
+            var err = new Error('You are not authenticated!');
+            err.status = 401;
+            next(err);
+        }
+        else{
+            next();
+        }
+    })(req, res, next);
+}
