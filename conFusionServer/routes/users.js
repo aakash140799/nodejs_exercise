@@ -3,13 +3,14 @@ var bodyParser = require('body-parser');
 var Users = require('../models/users');
 var passport = require('passport');
 var authenticate = require('../authenticate');
+const cors = require('./cors');
 
 
 var router = express.Router();
 router.use(bodyParser.json());
 
 /* GET users listing. */
-router.get('/', authenticate.verifyAdmin, function(req, res, next) {
+router.get('/', cors.corsWithOptions, authenticate.verifyAdmin, function(req, res, next) {
   Users.find({})
   .then((users) => {
     res.statusCode = 200;
@@ -20,7 +21,7 @@ router.get('/', authenticate.verifyAdmin, function(req, res, next) {
 });
 
 
-router.post('/signup', function(req, res, next) {
+router.post('/signup', cors.corsWithOptions, function(req, res, next) {
   Users.register(new Users({username: req.body.username,
                             firstname: req.body.firstname,
                             lastname: req.body.lastname }), req.body.password, (err, user) => {
@@ -41,7 +42,7 @@ router.post('/signup', function(req, res, next) {
 
 
 
-router.post('/login', passport.authenticate('local'), (req, res) => {
+router.post('/login', cors.corsWithOptions, passport.authenticate('local'), (req, res) => {
   var token = authenticate.getToken({_id:req.user._id});
   res.statusCode = 200;
   res.setHeader('Content-Type','application/json');
@@ -50,7 +51,7 @@ router.post('/login', passport.authenticate('local'), (req, res) => {
 
 
 
-router.get('/logout', function(req, res, next) {
+router.get('/logout', cors.corsWithOptions, function(req, res, next) {
   if(!req.user){
     const err = new Error('You are already logged out');
     err.status = 403;
