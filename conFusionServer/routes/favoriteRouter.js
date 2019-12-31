@@ -4,12 +4,14 @@ const bodyParser = require('body-parser');
 const Dishes = require('../models/dishes');
 const Favorites = require('../models/favorites');
 const authenticate = require('../authenticate');
+const cors = require('./cors');
 
 const favoriteRouter = express.Router();
 favoriteRouter.use(bodyParser.json());
 
 favoriteRouter.route('/')
-.get(authenticate.verifyUser, (req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => {res.sendStatus(200);})
+.get(cors.cors, authenticate.verifyUser, (req, res, next) => {
     Favorites.findOne({userid: req.user._id})
     .then((favorites) => {
         if(!favorites){
@@ -29,7 +31,7 @@ favoriteRouter.route('/')
     })
     .catch((err) => next(err))
 })
-.post(authenticate.verifyUser, (req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     Favorites.findOne({userid: req.user._id})
     .then((favorites) => {
         if(!favorites){
@@ -58,11 +60,11 @@ favoriteRouter.route('/')
     })
     .catch((err) => next(err));
 })
-.put(authenticate.verifyUser, (req, res, next) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     res.statusCode = 403;
     res.end("Put operation not supported on /favorites")
 })
-.delete(authenticate.verifyUser, (req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     Favorites.findOne({userid: req.user._id})
     .then((favorites) => {
         if(!favorites){
@@ -90,11 +92,30 @@ favoriteRouter.route('/')
 
 
 favoriteRouter.route('/:dishid')
-.get(authenticate.verifyUser, (req, res, next) => {
-    res.statusCode = 403;
-    res.end('Get Operation not supported on /favorites/'+req.params.dishid);
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, authenticate.verifyUser, (req, res, next) => {
+    Favorites.findOne({userid:req.user._id})
+    .then((favorites) => {
+        if(!favorites){
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json({exits:false, favorites:favorites});
+        }
+        else{
+            if(favorites.favorites.dishid.indexOf(req.params.dishid) < 0){
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.json({exits:false, favorites:favorites});
+            }
+            else{
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.json({exits:true, favorites:favorites});
+            }
+        }
+    })
 })
-.post(authenticate.verifyUser, (req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     Favorites.findOne({userid: req.user._id})
     .then((favorites) => {
         if(!favorites){
@@ -121,11 +142,11 @@ favoriteRouter.route('/:dishid')
     })
     .catch((err) => next(err));
 })
-.put(authenticate.verifyUser, (req, res, next) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     res.statusCode = 403;
     res.end('Put Operation not supported on /favorites/'+req.params.dishid);
 })
-.delete(authenticate.verifyUser, (req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     Favorites.findOne({userid: req.user._id})
     .then((favorites) => {
         if(!favorites){
