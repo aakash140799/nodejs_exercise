@@ -107,3 +107,6 @@ dist
 
 # session directories
 sessions/
+
+#client applications
+conFusion-Angular6/

@@ -27,6 +27,7 @@ var promoRouter = require('./routes/promoRouter');
 var leaderRouter = require('./routes/leaderRouter');
 var uploadRouter = require('./routes/uploadRouter');
 var favoriteRouter = require('./routes/favoriteRouter');
+var commentsRouter = require('./routes/commentsRouter');
 
 
 // import all models
@@ -70,6 +71,7 @@ app.use('/promotions', promoRouter);
 app.use('/leaders', leaderRouter);
 app.use('/favorites', favoriteRouter);
 app.use('/imageUpload', uploadRouter);
+app.use('/comments', commentsRouter);
 app.use(express.static(path.join(__dirname, 'public')));
 
 
