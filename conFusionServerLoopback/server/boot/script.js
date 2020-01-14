@@ -4,7 +4,7 @@ module.exports = function(app) {
     Role = app.models.Role;
     RoleMapping = app.models.RoleMapping;
     
-    Customers.findOne({name:'Admin'})
+    Customers.findOne({username:'Admin'})
     .then((user) => {
         if(!user){
             var admin;
@@ -22,7 +22,7 @@ module.exports = function(app) {
             .then((role) => {
                 return role.principals.create({
                     principalType: RoleMapping.USER,
-                    principalId: admin[0].id
+                    principalId: admin.id
                 });
             })
             .catch((err) => {
